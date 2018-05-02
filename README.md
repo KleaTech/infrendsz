@@ -1,0 +1,1 @@
+Információs rendszerek építése beadandó
