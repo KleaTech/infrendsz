@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Manager</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <style>
+            .few {
+                background-color:red;
+                background-image:none;
+            }
+            .enough {
+                background-color:lightgreen;
+                background-image:none;
+            }
+        </style>
+    </h:head>
+    <h:body>
+        <h1>WAREHOUSE MANAGER SOFTWARE</h1>
+        <p:tabView dynamic="true" cache="false" effect="fold">
+            <!--=================Components==================================-->
+            <p:tab title="Components">
+                <h:form>
+                    <p:growl id="growl" life="2000" />
+                    <p:dataTable id="components_table" var="row" value="#{components.rows}"
+                                 rowKey="#{row.serial}" selection="#{components.selected}" selectionMode="single">
+                        <f:facet name="header">
+                            List of components
+                        </f:facet>
+                        <p:column style="width:16px">
+                            <p:rowToggler />
+                        </p:column>
+                        <p:column headerText="Serial">
+                            <h:outputText value="#{row.serial}" />
+                            <f:facet name="footer">
+                                <p:inputText value="#{components.adding.serial}"/>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Name">
+                            <h:outputText value="#{row.name}" />
+                            <f:facet name="footer">
+                                <p:inputText value="#{components.adding.name}"/>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Quantity">
+                            <h:outputText value="#{row.quantity}" />
+                            <f:facet name="footer">
+                                <p:inputText value="#{components.adding.quantity}"/>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Add/remove" style="width: 180px">
+                            <p:inputText id="quantity" value="#{row.addingQuantity}" style="width: 3ch"/>
+                            <p:watermark for="quantity" value="1" />
+                            <p:commandButton id="b1" update="@form" icon="ui-icon-plus" action="#{components.increase}">
+                                <f:setPropertyActionListener value="#{row}" target="#{components.selected}"/>
+                            </p:commandButton>
+                            <p:commandButton id="b2" update="@form" icon="ui-icon-minus" action="#{components.decrease}">
+                                <f:setPropertyActionListener value="#{row}" target="#{components.selected}"/>
+                            </p:commandButton>
+                            <p:commandButton id="b3" update="@form" icon="ui-icon-close" action="#{components.delete}">
+                                <f:setPropertyActionListener value="#{row}" target="#{components.selected}"/>
+                            </p:commandButton>
+                            <f:facet name="footer">
+                                <p:commandButton value="Add" id="add_component" update="@form" actionListener="#{components.add}" styleClass="ui-priority-primary" />
+                            </f:facet>
+                        </p:column>
+                        <p:rowExpansion>
+                            <h:outputText value="First time added to the database: "/>
+                            <h:outputText value="#{row.firstStorage}" />
+                        </p:rowExpansion>
+                    </p:dataTable>
+                </h:form>
+            </p:tab>
+            <!--====================Makes====================================-->
+            <p:tab title="Makes">
+                <h:form id="makes_form">
+                    <p:growl id="growl" life="2000" />
+                    <p:dataTable id="makes_table" var="row" value="#{makes.rows}"
+                                 rowKey="#{row.name}" selection="#{makes.selected}" selectionMode="single">
+                        <f:facet name="header">
+                            List of makes
+                        </f:facet>
+                        <p:column headerText="Name">
+                            <h:outputText value="#{row.name}" />
+                        </p:column>
+                        <p:column headerText="Components">
+                            <h:outputText value="#{row.components}" />
+                        </p:column>
+                        <p:column style="width: 90px">
+                            <p:commandButton id="b42" update="@form" icon="ui-icon-search" oncomplete="PF('viewMake').show()">
+                                <f:setPropertyActionListener value="#{row}" target="#{makes.selected}"/>
+                            </p:commandButton>
+                            <p:commandButton id="b3" update="@form" icon="ui-icon-close" action="#{makes.delete}">
+                                <f:setPropertyActionListener value="#{row}" target="#{makes.selected}"/>
+                            </p:commandButton>
+                        </p:column>
+                        <f:facet name="footer">
+                            <p:commandButton value="Add new" oncomplete="PF('addMake').show()" styleClass="ui-priority-primary" />
+                        </f:facet>
+                    </p:dataTable>
+                    <p:dialog header="Add new make" widgetVar="addMake" modal="true" showEffect="fade" hideEffect="fade" resizable="false">
+                        <p:ajax event="close" listener="#{makes.close}"/>
+                        <p:dataTable id="inner_table" var="inner_row" value="#{makes.adding.inner}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Name:" for="name"/>
+                                <p:inputText id="name" value="#{makes.adding.name}"/>
+                                <p:commandButton value="Save" update="@form" action="#{makes.save}" styleClass="ui-priority-primary"/>
+                            </f:facet>
+                            <p:column headerText="Serial">
+                                <h:outputText value="#{inner_row.serial}"/>
+                            </p:column>
+                            <p:column headerText="Name">
+                                <h:outputText value="#{inner_row.name}"/>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Component" for="comp"/>
+                                    <p:autoComplete id="comp" dropdown="true" value="#{makes.adding.components}" completeMethod="#{makes.completeMethod}"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Amount">
+                                <h:outputText value="#{inner_row.amount}"/>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Amount" for="am"/>
+                                    <p:inputText id="am" value="#{makes.adding.amount}"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="width: 100px">
+                                <f:facet name="footer">
+                                    <p:commandButton value="Add" update="@form" action="#{makes.add}" oncomplete="PF('addMake').show()" styleClass="ui-priority-primary" />
+                                </f:facet>
+                            </p:column>
+                        </p:dataTable>
+                    </p:dialog>
+                    <p:dialog header="View make" widgetVar="viewMake" modal="true" showEffect="fade" hideEffect="fade" resizable="false">
+                        <p:dataTable var="row_inner" value="#{makes.selected.inner}" rowKey="#{row_inner.name}">
+                            <f:facet name="header">
+                                Units in the selected make
+                            </f:facet>
+                            <p:column headerText="Serial">
+                                <h:outputText value="#{row_inner.serial}" />
+                            </p:column>
+                            <p:column headerText="Name">
+                                <h:outputText value="#{row_inner.name}" />
+                            </p:column>
+                            <p:column headerText="Amount">
+                                <h:outputText value="#{row_inner.amount}" />
+                            </p:column>
+                        </p:dataTable>
+                    </p:dialog>
+                </h:form>
+            </p:tab>
+            <!--=================Customers===================================-->
+            <p:tab title="Customers">
+                <h:form>
+                    <p:growl id="growl" life="2000" />
+                    <p:dataTable var="row" value="#{customers.rows}"
+                                 rowKey="#{row.name}" selection="#{customers.selected}" selectionMode="single">
+                        <f:facet name="header">
+                            List of customers
+                        </f:facet>
+                        <p:column style="width:16px">
+                            <p:rowToggler />
+                        </p:column>
+                        <p:column headerText="Name">
+                            <h:outputText value="#{row.name}" />
+                            <f:facet name="footer">
+                                <p:inputText value="#{customers.adding.name}"/>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Orders">
+                            <h:outputText value="#{row.orders}"/>
+                            <f:facet name="footer">
+                                <p:commandButton value="Add" update="@form" action="#{customers.add}" styleClass="ui-priority-primary" />
+                            </f:facet>
+                        </p:column>
+                        <p:rowExpansion>
+                            <p:dataList value="#{row.orderList()}" var="list_item">
+                                <f:facet name="header">
+                                    Orders
+                                </f:facet>
+                                #{list_item}
+                            </p:dataList>
+                        </p:rowExpansion>
+                    </p:dataTable>
+                </h:form>
+            </p:tab>
+            <!--=================Make order==================================-->
+            <p:tab title="Make order">
+                <h:form>
+                    <p:growl id="growl" life="2000" />
+                    <h2>Make predefined order</h2>
+                    <h:outputText value="Order: "/>
+                    <p:autoComplete dropdown="true" value="#{orders.orderNormal}" completeMethod="#{orders.orderComplete}"/>
+                    <h:outputText value="Customer: "/>
+                    <p:autoComplete dropdown="true" value="#{orders.customerNormal}" completeMethod="#{orders.customerComplete}"/>
+                    <p:commandButton value="Order predefined" action="#{orders.normalOrder}" update="dialog" oncomplete="PF('availabilityView').show()"/>
+                    <h2>Make new order</h2>
+                    <h:outputText value="Order: "/>
+                    <p:autoComplete dropdown="true" value="#{orders.orderQuick}" completeMethod="#{orders.orderComplete}"/>
+                    <h:outputText value="Customer: "/>
+                    <p:autoComplete dropdown="true" value="#{orders.customerQuick}" completeMethod="#{orders.customerComplete}"/>
+                    <h:outputText value="Quantity: "/>
+                    <p:inputText value="#{orders.quantity}"/>
+                    <p:commandButton value="New order from make" action="#{orders.quickOrder}" update="dialog" oncomplete="PF('availabilityView').show()"/>
+                    <p:dialog id="dialog" header="Check availability" widgetVar="availabilityView" modal="true" showEffect="fade" hideEffect="fade" resizable="false">
+                        <p:dataTable var="inner_row" value="#{orders.check}" rowStyleClass="#{inner_row.have lt inner_row.need ? 'few' : 'enough'}">
+                            <p:column headerText="Component">
+                                <h:outputText value="#{inner_row.component}"/>
+                            </p:column>
+                            <p:column headerText="Have">
+                                <h:outputText value="#{inner_row.have}"/>
+                            </p:column>
+                            <p:column headerText="Need">
+                                <h:outputText value="#{inner_row.need}"/>
+                            </p:column>
+                        </p:dataTable>
+                        <p:commandButton value="Make order" disabled="#{orders.disabled() ? 'true' : 'false'}" action="#{orders.send}" oncomplete="location.reload()"/>
+                    </p:dialog>
+                </h:form>
+            </p:tab>
+        </p:tabView>
+    </h:body>
+</html>
