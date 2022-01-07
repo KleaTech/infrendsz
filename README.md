@@ -1,1 +1,1 @@
-Információs rendszerek építése beadandó
+JSF test project
